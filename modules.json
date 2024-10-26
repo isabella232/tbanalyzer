@@ -10,6 +10,21 @@
                         "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
                         "installed_by": ["modules"]
                     },
+                    "gatk4/applybqsr": {
+                        "branch": "master",
+                        "git_sha": "6b3bf38285d94cc1ea3cd9fa93310d54b04c3819",
+                        "installed_by": ["modules"]
+                    },
+                    "gatk4/applyvqsr": {
+                        "branch": "master",
+                        "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
+                        "installed_by": ["modules"]
+                    },
+                    "lofreq/call": {
+                        "branch": "master",
+                        "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
+                        "installed_by": ["modules"]
+                    },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "cf17ca47590cc578dfb47db1c2a44ef86f89976d",
