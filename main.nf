@@ -16,6 +16,7 @@
 */
 
 include { TBANALYZER  } from './workflows/tbanalyzer'
+include { MTBSEQ_NF    } from './workflows/mtbseq'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_tbanalyzer_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_tbanalyzer_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_tbanalyzer_pipeline'
@@ -47,7 +48,18 @@ workflow NFCORE_TBANALYZER {
 
     main:
 
-    //
+    // SELECT MODE:
+
+    // MTBSEQ
+    if(params.mode == "mtbseq") {
+       MTBSEQ_NF (
+            PIPELINE_INITIALISATION.out.samplesheet
+       )
+    }
+
+
+
+
     // WORKFLOW: Run pipeline
     //
     TBANALYZER (
