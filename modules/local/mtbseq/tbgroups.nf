@@ -1,7 +1,13 @@
 process TBGROUPS {
     tag "cohort"
     label 'process_single'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
+
+    conda "bioconda::mtbseq=1.1.0"
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
 
     input:
         path("Amend/*")
@@ -11,6 +17,8 @@ process TBGROUPS {
 
     output:
         path("Groups/*")
+        path("Groups/*.matrix"), emit: distance_matrix
+        path("Groups/*.groups"), emit: groups
         path "versions.yml", emit: versions
 
 
@@ -35,7 +43,7 @@ process TBGROUPS {
         || true               # NOTE This is a hack to overcome the exit status 1 thrown by mtbseq
 
 
-        
+
        cat <<-END_VERSIONS > versions.yml
        "${task.process}":
           MTBseq: \$(${params.mtbseq_path} --version | cut -d " " -f 2)

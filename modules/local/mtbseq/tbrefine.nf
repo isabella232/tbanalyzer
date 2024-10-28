@@ -1,7 +1,13 @@
 process TBREFINE {
     tag "${meta.id}"
     label 'process_medium'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
+
+    conda "bioconda::mtbseq=1.1.0"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
+
 
     input:
         tuple val(meta), path("Bam/")
@@ -9,7 +15,7 @@ process TBREFINE {
         tuple path(ref_resistance_list), path(ref_interesting_regions), path(ref_gene_categories), path(ref_base_quality_recalibration)
 
     output:
-        tuple val(meta), path("GATK_Bam/${meta.id}_${params.library_name}*gatk.{bam,bai,bamlog,grp,intervals}"), emit: gatk_bam
+        tuple val(meta), path("GATK_Bam/${meta.id}_${meta.library}*gatk.{bam,bai,bamlog,grp,intervals}"), emit: gatk_bam
 
     script:
 
@@ -44,10 +50,10 @@ process TBREFINE {
 
 
         mkdir GATK_Bam
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bam
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bai
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bamlog
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.grp
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.intervals
+        touch GATK_Bam/${meta.id}_${meta.library}.gatk.bam
+        touch GATK_Bam/${meta.id}_${meta.library}.gatk.bai
+        touch GATK_Bam/${meta.id}_${meta.library}.gatk.bamlog
+        touch GATK_Bam/${meta.id}_${meta.library}.gatk.grp
+        touch GATK_Bam/${meta.id}_${meta.library}.gatk.intervals
         """
 }

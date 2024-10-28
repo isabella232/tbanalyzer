@@ -1,7 +1,17 @@
 process TBFULL {
     tag "cohort"
-    label 'process_max'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
+    label 'process_tbfull'
+    label 'error_retry'
+
+
+    conda "bioconda::mtbseq=1.1.0"
+
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
+
 
     input:
         path("*")
@@ -13,8 +23,11 @@ process TBFULL {
         path("Position_Tables")
         path("Classification")
         path("Statistics")
-        path("Called/*_${params.library_name}*gatk_position_variants*.tab"), emit: position_variants
-        path("Position_Tables/*_${params.library_name}*.gatk_position_table.tab"), emit: position_tables
+        path("Statistics/Mapping_and_Variant_Statistics.tab"), emit: statistics
+        path("Classification/Strain_Classification.tab"), emit: classification
+        path("Called/*gatk_position_variants*.tab"), emit: position_variants
+        path("Position_Tables/*.gatk_position_table.tab"), emit: position_tables
+        path "versions.yml", emit: versions
 
     script:
         def args = task.ext.args ?: " --minbqual ${params.minbqual} --mincovf ${params.mincovf} --mincovr ${params.mincovr} --minphred ${params.minphred} --minfreq ${params.minfreq} --resilist ${ref_resistance_list} --unambig ${params.unambig} --window ${params.window} --distance ${params.distance}"
@@ -31,6 +44,13 @@ process TBFULL {
         1>>.command.out \\
         2>>.command.err \\
         || true               # NOTE This is a hack to overcome the exit status 1 thrown by mtbseq
+
+
+
+       cat <<-END_VERSIONS > versions.yml
+       "${task.process}":
+          MTBseq: \$(${params.mtbseq_path} --version | cut -d " " -f 2)
+       END_VERSIONS
 
         """
 
@@ -56,26 +76,25 @@ process TBFULL {
 
 
         mkdir GATK_Bam
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bam
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bai
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.bamlog
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.grp
-        touch GATK_Bam/${meta.id}_${params.library_name}.gatk.intervals
+        touch GATK_Bam/stub.gatk.bam
+        touch GATK_Bam/stub.gatk.bai
+        touch GATK_Bam/stub.gatk.bamlog
+        touch GATK_Bam/stub.gatk.grp
+        touch GATK_Bam/stub.gatk.intervals
         mkdir Bam
-        mkdir Bam/${meta.id}
-        touch Bam/${meta.id}_${params.library_name}.bam
-        touch Bam/${meta.id}_${params.library_name}.bai
-        touch Bam/${meta.id}_${params.library_name}.bamlog
+        touch Bam/stub.bam
+        touch Bam/stub.bai
+        touch Bam/stub.bamlog
         mkdir Called
-        touch Called/${meta.id}_${params.library_name}.gatk_position_uncovered_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
-        touch Called/${meta.id}_${params.library_name}.gatk_position_variants_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
+        touch Called/stub.gatk_position_uncovered_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
+        touch Called/stub.gatk_position_variants_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
         mkdir Mpileup
-        touch Mpileup/${meta.id}_${params.library_name}.gatk.mpileup
-        touch Mpileup/${meta.id}_${params.library_name}.gatk.mpileuplog
+        touch Mpileup/stub.gatk.mpileup
+        touch Mpileup/stub.gatk.mpileuplog
         mkdir Classification
         touch Classification/Strain_Classification.tab
         mkdir Position_Tables
-        touch Position_Tables/${meta.id}_${params.library_name}.gatk_position_table.tab
+        touch Position_Tables/stub.gatk_position_table.tab
         mkdir Statistics
         touch Statistics/Mapping_and_Variant_Statistics.tab
 

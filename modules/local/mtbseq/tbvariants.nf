@@ -1,7 +1,13 @@
 process TBVARIANTS {
     tag "${meta.id}"
     label 'process_single'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
+
+    conda "bioconda::mtbseq=1.1.0"
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
 
     input:
         tuple val(meta), path("Position_Tables/*")
@@ -9,8 +15,8 @@ process TBVARIANTS {
         tuple path(ref_resistance_list), path(ref_interesting_regions), path(ref_gene_categories), path(ref_base_quality_recalibration)
 
     output:
-        path("Called/${meta.id}_${params.library_name}*gatk_position_{uncovered,variants}*.tab")
-        path("Called/${meta.id}_${params.library_name}*gatk_position_variants*.tab"), emit: tbjoin_input
+        path("Called/${meta.id}_${meta.library}*gatk_position_{uncovered,variants}*.tab")
+        path("Called/${meta.id}_${meta.library}*gatk_position_variants*.tab"), emit: tbjoin_input
 
     script:
         def args = task.ext.args ?: "--mincovf ${params.mincovf} --mincovr ${params.mincovr} --minphred ${params.minphred} --minfreq ${params.minfreq}"
@@ -51,8 +57,8 @@ process TBVARIANTS {
 
 
         mkdir Called
-        touch Called/${meta.id}_${params.library_name}.gatk_position_uncovered_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
-        touch Called/${meta.id}_${params.library_name}.gatk_position_variants_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
+        touch Called/${meta.id}_${meta.library}.gatk_position_uncovered_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
+        touch Called/${meta.id}_${meta.library}.gatk_position_variants_cf${params.mincovf}_cr${params.mincovr}_fr${params.minfreq}_ph${params.minphred}_outmode000.tab
 
         """
 

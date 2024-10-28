@@ -1,7 +1,14 @@
 process TBSTATS {
     tag "cohort"
     label 'process_single_high_memory'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
+
+    conda "bioconda::mtbseq=1.1.0"
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
+
 
     input:
         path("Bam/*")
@@ -10,7 +17,7 @@ process TBSTATS {
         tuple path(ref_resistance_list), path(ref_interesting_regions), path(ref_gene_categories), path(ref_base_quality_recalibration)
 
     output:
-        path("Statistics/Mapping_and_Variant_Statistics.tab")
+        path("Statistics/Mapping_and_Variant_Statistics.tab"), emit: statistics
 
     script:
 

@@ -1,8 +1,15 @@
 process TBPILE {
     tag "${meta.id}"
     label 'process_single'
-    publishDir params.results_dir, mode: params.save_mode, enabled: params.should_publish
     stageInMode 'copy'
+
+    conda "bioconda::mtbseq=1.1.0"
+
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/mtbseq:1.1.0--hdfd78af_0' :
+        'biocontainers/mtbseq:1.1.0--hdfd78af_0' }"
+
+
 
     input:
         tuple val(meta), path("GATK_Bam/*")
@@ -10,8 +17,8 @@ process TBPILE {
         tuple path(ref_resistance_list), path(ref_interesting_regions), path(ref_gene_categories), path(ref_base_quality_recalibration)
 
     output:
-        path("Mpileup/${meta.id}_${params.library_name}*.gatk.{mpileup,mpileuplog}")
-        tuple val(meta), path("Mpileup/${meta.id}_${params.library_name}*.gatk.mpileup"), emit: mpileup
+        path("Mpileup/${meta.id}_${meta.library}*.gatk.{mpileup,mpileuplog}")
+        tuple val(meta), path("Mpileup/${meta.id}_${meta.library}*.gatk.mpileup"), emit: mpileup
 
     script:
 
@@ -45,8 +52,8 @@ process TBPILE {
         sleep \$[ ( \$RANDOM % 10 )  + 1 ]s
 
         mkdir Mpileup
-        touch Mpileup/${meta.id}_${params.library_name}.gatk.mpileup
-        touch Mpileup/${meta.id}_${params.library_name}.gatk.mpileuplog
+        touch Mpileup/${meta.id}_${meta.library}.gatk.mpileup
+        touch Mpileup/${meta.id}_${meta.library}.gatk.mpileuplog
 
         """
 
