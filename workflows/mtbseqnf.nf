@@ -37,10 +37,10 @@ workflow MTBSEQ_NF {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    ch_reference_files = Channel.value([params.resilist,
-                                        params.intregions,
-                                        params.categories,
-                                        params.basecalib])
+    ch_reference_files = Channel.value([params.mtbseq_resilist,
+                                        params.mtbseq_intregions,
+                                        params.mtbseq_categories,
+                                        params.mtbseq_basecalib])
 
     QUALITY_CHECK(ch_samplesheet)
 
@@ -75,7 +75,7 @@ workflow MTBSEQ_NF {
                 ch_reads.dump(tag: 'ch_reads')
 
                 TBFULL( ch_reads,
-                        params.user,
+                        params.mtbseq_user,
                         ch_reference_files )
 
 
@@ -84,17 +84,17 @@ workflow MTBSEQ_NF {
                 TBJOIN( TBFULL.out.position_variants.collect(sort:true),
                         TBFULL.out.position_tables.collect(sort:true),
                         QUALITY_CHECK.out.derived_cohort_tsv,
-                        params.user,
+                        params.mtbseq_user,
                         ch_reference_files)
 
                 TBAMEND(TBJOIN.out.joint_samples,
                         QUALITY_CHECK.out.derived_cohort_tsv,
-                        params.user,
+                        params.mtbseq_user,
                         ch_reference_files)
 
                 TBGROUPS(TBAMEND.out.samples_amended,
                         QUALITY_CHECK.out.derived_cohort_tsv,
-                        params.user,
+                        params.mtbseq_user,
                         ch_reference_files)
 
                 ch_versions = ch_versions.mix(TBFULL.out.versions)
