@@ -17,7 +17,7 @@ include { MULTIQC            } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_mtbseqnf_pipeline'
+include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_tbanalyzer_pipeline'
 
 
 
@@ -49,9 +49,9 @@ workflow MTBSEQ_NF {
     ch_multiqc_files = ch_multiqc_files.mix(QUALITY_CHECK.out.multiqc_files)
 
 
-    if(!params.only_qc) {
+    if(!params.mtbseq_only_qc) {
 
-        if( params.parallel ) {
+        if( params.mtbseq_parallel ) {
 
                 ch_reads =  QUALITY_CHECK.out.reads_and_meta_ch
 
@@ -153,7 +153,9 @@ workflow MTBSEQ_NF {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        [],
+        []
     )
 
     emit:
